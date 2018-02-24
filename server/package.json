@@ -1,0 +1,12 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Graphcool Service for Feature Creeps",
+  "scripts": {
+    "graphcool": "graphcool"
+  },
+  "devDependencies": {
+    "graphcool": "^0.11.5"
+  },
+  "license": "MIT"
+}

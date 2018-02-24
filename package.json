@@ -29,6 +29,10 @@
     "{src,package.json}/**/*.{js,jsx,json,css}": [
       "prettier --write",
       "git add"
+    ],
+    "server/{src,package.json}/**/*.{js,jsx,json,css}": [
+      "prettier --write",
+      "git add"
     ]
   },
   "repository": {
