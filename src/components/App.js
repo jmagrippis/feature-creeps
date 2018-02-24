@@ -1,17 +1,15 @@
-import React, { PureComponent, Fragment } from 'react'
+import React, { PureComponent } from 'react'
+import { ApolloProvider } from 'react-apollo'
 
-import Header from './Header/Header'
-import Body from './Body/Body'
-import Footer from './Footer/Footer'
+import Home from './Home/Home'
+import client from '../apolloClient'
 
 class App extends PureComponent {
   render() {
     return (
-      <Fragment>
-        <Header />
-        <Body />
-        <Footer />
-      </Fragment>
+      <ApolloProvider client={client}>
+        <Home />
+      </ApolloProvider>
     )
   }
 }
