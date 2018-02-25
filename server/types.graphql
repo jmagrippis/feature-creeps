@@ -2,8 +2,8 @@ type User @model {
   id: ID! @isUnique
   createdAt: DateTime!
   updatedAt: DateTime!
-  email: String! @isUnique
-  userName: String! @isUnique
+  googleUserId: String @isUnique
+  email: String
   firstName: String
   lastName: String
   avatarUrl: String
