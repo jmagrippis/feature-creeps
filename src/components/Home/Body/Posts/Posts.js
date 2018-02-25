@@ -40,11 +40,9 @@ const ALL_POSTS_QUERY = gql`
   }
 `
 
-const PostsWithQuery = graphql(ALL_POSTS_QUERY, {
+export default graphql(ALL_POSTS_QUERY, {
   name: 'allPostsQuery',
   options: {
     fetchPolicy: 'network-only',
   },
 })(Posts)
-
-export default PostsWithQuery
