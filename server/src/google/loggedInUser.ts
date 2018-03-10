@@ -3,11 +3,24 @@ import { GraphQLClient } from 'graphql-request'
 
 interface User {
   id: string
+  displayName: string
 }
 
-export default async (event: FunctionEvent<{}>) => {
-  console.log(event)
+const GET_USER_QUERY = `
+query getUser($id: ID!) {
+  User(id: $id) {
+    id
+    displayName
+  }
+}
+`
+async function getUser(api: GraphQLClient, id: string): Promise<{ User }> {
+  const variables = { id }
 
+  return api.request<{ User }>(GET_USER_QUERY, variables)
+}
+
+async function loggedInUser(event: FunctionEvent<{}>) {
   try {
     // no logged in user
     if (!event.context.auth || !event.context.auth.nodeId) {
@@ -19,33 +32,18 @@ export default async (event: FunctionEvent<{}>) => {
     const api = graphcool.api('simple/v1')
 
     // get user by id
-    const user: User = await getUser(api, userId)
-      .then(r => r.User)
+    const user: User = await getUser(api, userId).then(r => r.User)
 
     // no logged in user
     if (!user || !user.id) {
       return { data: null }
     }
 
-    return { data: { id: user.id } }
+    return { data: { id: user.id, displayName: user.displayName } }
   } catch (e) {
     console.log(e)
-    return { error: 'An unexpected error occured during authentication.' }
+    return { error: 'An unexpected error occurred during authentication.' }
   }
 }
 
-async function getUser(api: GraphQLClient, id: string): Promise<{ User }> {
-  const query = `
-    query getUser($id: ID!) {
-      User(id: $id) {
-        id
-      }
-    }
-  `
-
-  const variables = {
-    id,
-  }
-
-  return api.request<{ User }>(query, variables)
-}
+export default loggedInUser
