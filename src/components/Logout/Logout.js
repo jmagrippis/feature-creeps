@@ -1,19 +1,21 @@
 import React, { PureComponent } from 'react'
-import { GoogleLogout } from 'react-google-login'
+import { Logout as YoloLogout } from 'react-googleyolo'
+import { withApollo } from 'react-apollo'
 
 class Logout extends PureComponent {
-  logout() {
+  logout = () => {
     try {
       localStorage.removeItem('graphToken')
-      window.location.reload()
+      const { client: { resetStore } } = this.props
+      resetStore()
     } catch (err) {
-      console.log('Error operating on localStorage', localStorage)
+      console.log('Error operating on localStorage', err)
     }
   }
 
   render() {
-    return <GoogleLogout buttonText="Logout" onLogoutSuccess={this.logout} />
+    return <YoloLogout onAutoSignInDisabled={this.logout} />
   }
 }
 
-export default Logout
+export default withApollo(Logout)

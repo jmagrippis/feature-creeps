@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
+import { Login } from 'react-googleyolo'
 
-import GoogleLogin from '../../GoogleLogin/GoogleLogin'
 import Logout from '../../Logout/Logout'
 
 class Header extends PureComponent {
@@ -10,10 +10,23 @@ class Header extends PureComponent {
     }
 
     if (user) {
-      return <Logout />
+      return (
+        <div>
+          Logged in as {user.displayName}
+          <Logout />
+        </div>
+      )
     }
 
-    return <GoogleLogin />
+    const { onLoginSuccess, onLoginError } = this.props
+
+    return (
+      <Login
+        clientId={process.env.REACT_APP_GOOGLE_CREDENTIALS_CLIENT_ID}
+        onLoginSuccess={onLoginSuccess}
+        onLoginError={onLoginError}
+      />
+    )
   }
 
   render() {

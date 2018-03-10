@@ -8,11 +8,7 @@ export class Posts extends PureComponent {
   render() {
     const { allPostsQuery: { allPosts, loading, refetch } } = this.props
     if (loading) {
-      return (
-        <div>
-          Loading (from {process.env.REACT_APP_GRAPHQL_SIMPLE_ENDPOINT})
-        </div>
-      )
+      return <div>Loading posts...</div>
     }
 
     return (
@@ -34,7 +30,7 @@ const ALL_POSTS_QUERY = gql`
       body
       author {
         id
-        firstName
+        displayName
       }
     }
   }
