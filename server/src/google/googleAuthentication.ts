@@ -6,59 +6,46 @@ interface User {
   id: string
 }
 
-interface GoogleUser {
-  id: string
-  email: string | null
+interface GoogleTokenInfoResponse {
+  sub: string
+  email: string
+  name: string
+  given_name: string
+  family_name: string
+  picture: string
 }
 
-interface GoogleTokenResponse {
-  sub: string
-  email: string | null
+interface GraphQLCreateUserPayload {
+  googleUserId: string
+  email: string
+  firstName: string
+  lastName: string
+  displayName: string
+  avatarUrl: string
 }
 
 interface EventData {
   googleToken: string
 }
 
-export default async (event: FunctionEvent<EventData>) => {
-  console.log(event)
+function parseGoogleTokenInfo(
+  tokenInfo: GoogleTokenInfoResponse
+): GraphQLCreateUserPayload {
+  const { sub, email, name, given_name, family_name, picture } = tokenInfo
 
-  try {
-    const graphcool = fromEvent(event)
-    const api = graphcool.api('simple/v1')
-
-    const { googleToken } = event.data
-
-    // call google API to obtain user data
-    const googleUser = await getGoogleUser(googleToken)
-
-    // get graphcool user by google id
-    const user: User = await getGraphcoolUser(api, googleUser.sub).then(
-      r => r.User
-    )
-
-    // check if graphcool user exists, and create new one if not
-    let userId: string | null = null
-
-    if (!user) {
-      userId = await createGraphcoolUser(api, googleUser.sub)
-    } else {
-      userId = user.id
-    }
-
-    // generate node token for User node
-    const token = await graphcool.generateAuthToken(userId!, 'User')
-
-    return { data: { id: userId, token } }
-  } catch (e) {
-    console.log(e)
-    return { error: 'An unexpected error occured during authentication.' }
+  return {
+    googleUserId: sub,
+    email,
+    firstName: given_name,
+    lastName: family_name,
+    displayName: given_name,
+    avatarUrl: picture,
   }
 }
 
-async function getGoogleUser(
+async function getGoogleTokenInfo(
   googleToken: string
-): Promise<GoogleTokenResponse> {
+): Promise<GoogleTokenInfoResponse> {
   const endpoint = `https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${googleToken}`
   const data = await fetch(endpoint).then(response => response.json())
 
@@ -67,6 +54,13 @@ async function getGoogleUser(
   }
 
   return data
+}
+
+async function getGoogleUser(
+  googleToken: string
+): Promise<GraphQLCreateUserPayload> {
+  const googleUser = await getGoogleTokenInfo(googleToken)
+  return parseGoogleTokenInfo(googleUser)
 }
 
 async function getGraphcoolUser(
@@ -88,25 +82,70 @@ async function getGraphcoolUser(
   return api.request<{ User }>(query, variables)
 }
 
+const CREATE_USER_MUTATION = `
+mutation createUser(
+  $googleUserId: String!
+  $email: String!
+  $firstName: String!
+  $lastName: String!
+  $displayName: String!
+  $avatarUrl: String
+) {
+  createUser(
+    googleUserId: $googleUserId
+    email: $email
+    firstName: $firstName
+    lastName: $lastName
+    displayName: $displayName
+    avatarUrl: $avatarUrl
+  ) {
+    id
+  }
+}
+`
+
 async function createGraphcoolUser(
   api: GraphQLClient,
-  googleUserId: string
+  user: GraphQLCreateUserPayload
 ): Promise<string> {
-  const mutation = `
-    mutation createUser($googleUserId: String!) {
-      createUser(
-        googleUserId: $googleUserId
-      ) {
-        id
-      }
-    }
-  `
-
-  const variables = {
-    googleUserId,
-  }
-
   return api
-    .request<{ createUser: User }>(mutation, variables)
+    .request<{ createUser: User }>(CREATE_USER_MUTATION, user)
     .then(r => r.createUser.id)
 }
+
+async function googleAuthentication(event: FunctionEvent<EventData>) {
+  try {
+    const graphcool = fromEvent(event)
+    const api = graphcool.api('simple/v1')
+
+    const { googleToken } = event.data
+
+    // call google API to obtain user data
+    const googleUser = await getGoogleUser(googleToken)
+
+    // get graphcool user by google id
+    const user: User = await getGraphcoolUser(
+      api,
+      googleUser.googleUserId
+    ).then(r => r.User)
+
+    // check if graphcool user exists, and create new one if not
+    let userId: string | null = null
+
+    if (!user) {
+      userId = await createGraphcoolUser(api, googleUser)
+    } else {
+      userId = user.id
+    }
+
+    // generate node token for User node
+    const token = await graphcool.generateAuthToken(userId!, 'User')
+
+    return { data: { id: userId, token } }
+  } catch (e) {
+    console.log(e)
+    return { error: 'An unexpected error occurred during authentication.' }
+  }
+}
+
+export default googleAuthentication
