@@ -5,7 +5,7 @@ import gql from 'graphql-tag'
 
 import Home from './Home/Home'
 
-class App extends PureComponent {
+export class App extends PureComponent {
   state = { isAuthLoading: true }
 
   onRetrieveSuccess = async credential => {
