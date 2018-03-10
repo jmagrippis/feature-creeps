@@ -15,7 +15,10 @@ export class App extends PureComponent {
     const googleToken = credential.idToken
 
     if (!googleToken) {
-      console.log('Invalid credential received:', credential)
+      console.log(
+        'No `idToken` in the received credential, cannot validate server-side:',
+        credential
+      )
       return
     }
 
