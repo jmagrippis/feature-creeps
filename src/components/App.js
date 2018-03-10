@@ -13,6 +13,12 @@ class App extends PureComponent {
 
     const { authenticateGoogleUser } = this.props
     const googleToken = credential.idToken
+
+    if (!googleToken) {
+      console.log('Invalid credential received:', credential)
+      return
+    }
+
     const graphResponse = await authenticateGoogleUser({
       variables: { googleToken },
     })
