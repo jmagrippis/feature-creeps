@@ -1,8 +1,8 @@
 type LoggedInUserPayload {
   id: ID!
+  displayName: String!
 }
 
 extend type Query {
-  # return user data if request contains valid authentication token
   loggedInUser: LoggedInUserPayload
 }

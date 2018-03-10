@@ -8,10 +8,20 @@ import Footer from './Footer/Footer'
 
 class Home extends PureComponent {
   render() {
-    const { data: { loading, loggedInUser } } = this.props
+    const {
+      isAuthLoading,
+      data: { loading, loggedInUser },
+      onLoginSuccess,
+      onLoginError,
+    } = this.props
     return (
       <Fragment>
-        <Header isLoading={loading} user={loggedInUser} />
+        <Header
+          isLoading={isAuthLoading || loading}
+          user={loggedInUser}
+          onLoginSuccess={onLoginSuccess}
+          onLoginError={onLoginError}
+        />
         <Body />
         <Footer />
       </Fragment>
@@ -23,6 +33,7 @@ const LOGGED_IN_USER = gql`
   query LoggedInUser {
     loggedInUser {
       id
+      displayName
     }
   }
 `

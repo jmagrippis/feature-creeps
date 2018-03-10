@@ -6,6 +6,7 @@ type User @model {
   email: String
   firstName: String
   lastName: String
+  displayName: String
   avatarUrl: String
   posts: [Post!]! @relation(name: "UserPosts")
   comments: [Comment!]! @relation(name: "UserComments")
